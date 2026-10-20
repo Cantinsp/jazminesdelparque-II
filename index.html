@@ -750,6 +750,14 @@
       seleccionarModo(modoActual);
     }
   });
+
+  // Fix: forzar visibilidad seccionAdmin si modo es admin
+  window.addEventListener("load", () => {
+    if (modoActual === "admin") {
+      const el = document.getElementById("seccionAdmin");
+      if (el) { el.style.display = "block"; el.style.visibility = "visible"; }
+    }
+  });
 </script>
 
 <style>
@@ -1156,7 +1164,7 @@ tr:hover td { background: rgba(201,162,39,0.05); }
     </div>
 
     <!-- SECCIÓN: ADMIN — EXPORTAR -->
-    <div id="seccionAdmin" style="display:none;">
+    <div id="seccionAdmin" style="display:none; min-height:100px;">
 
       <!-- GENERADOR DE QR -->
       <div class="seccion">
