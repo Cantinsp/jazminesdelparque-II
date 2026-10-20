@@ -306,7 +306,7 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `CSP_Visitas_JazminesII_${mes || "completo"}.csv`;
+    a.download = `CSP_Visitas_jazmines2_${mes || "completo"}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     mostrarAlerta("✔ Exportado correctamente.", "ok");
@@ -509,7 +509,7 @@
     if (!qrDataActual || !window._qrCardDataURL) { mostrarAlerta("Generá el QR primero.", "error"); return; }
     const a = document.createElement("a");
     a.href = window._qrCardDataURL;
-    a.download = "QR_" + qrDataActual.nombre.replace(/ /g,"_") + "_JazminesII.png";
+    a.download = "QR_" + qrDataActual.nombre.replace(/ /g,"_") + "_jazmines2.png";
     a.click();
     mostrarAlerta("✔ Tarjeta QR descargada en Descargas.", "ok");
   };
@@ -546,7 +546,7 @@
       if (window._qrCardDataURL) {
         const a = document.createElement("a");
         a.href = window._qrCardDataURL;
-        a.download = "QR_" + v.nombre.replace(/ /g,"_") + "_JazminesII.png";
+        a.download = "QR_" + v.nombre.replace(/ /g,"_") + "_jazmines2.png";
         a.click();
         mostrarAlerta("📎 Tarjeta QR descargada — adjuntala en el chat de WhatsApp", "ok");
       }
@@ -745,19 +745,14 @@
   };
 
   // Auto-seleccionar si ya hay modo guardado
-  document.addEventListener("DOMContentLoaded", () => {
-    if (modoActual && MODOS[modoActual]) {
-      seleccionarModo(modoActual);
-    }
-  });
-
-  // Fix: forzar visibilidad seccionAdmin si modo es admin
-  window.addEventListener("load", () => {
-    if (modoActual === "admin") {
-      const el = document.getElementById("seccionAdmin");
-      if (el) { el.style.display = "block"; el.style.visibility = "visible"; }
-    }
-  });
+  // type="module" ya es diferido — el DOM está listo cuando esto corre
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      if (modoActual && MODOS[modoActual]) seleccionarModo(modoActual);
+    });
+  } else {
+    if (modoActual && MODOS[modoActual]) seleccionarModo(modoActual);
+  }
 </script>
 
 <style>
@@ -1127,8 +1122,8 @@ tr:hover td { background: rgba(201,162,39,0.05); }
                 <option value="">Seleccionar...</option>
                 <option value="Visita">Visita</option>
                 <option value="Doméstica">Doméstica</option>
-                <option value="Delivery">Delivery</option>
                 <option value="Huésped Airbnb">Huésped Airbnb</option>
+                <option value="Delivery">Delivery</option>
                 <option value="Servicio">Servicio</option>
                 <option value="Proveedor">Proveedor</option>
               </select>
@@ -1164,7 +1159,7 @@ tr:hover td { background: rgba(201,162,39,0.05); }
     </div>
 
     <!-- SECCIÓN: ADMIN — EXPORTAR -->
-    <div id="seccionAdmin" style="display:none; min-height:100px;">
+    <div id="seccionAdmin" style="display:none;">
 
       <!-- GENERADOR DE QR -->
       <div class="seccion">
@@ -1181,8 +1176,8 @@ tr:hover td { background: rgba(201,162,39,0.05); }
                 <option value="">Seleccionar...</option>
                 <option value="Visita">Visita</option>
                 <option value="Doméstica">Doméstica</option>
-                <option value="Delivery">Delivery</option>
                 <option value="Huésped Airbnb">Huésped Airbnb</option>
+                <option value="Delivery">Delivery</option>
                 <option value="Servicio">Servicio</option>
                 <option value="Proveedor">Proveedor</option>
               </select>
@@ -1303,5 +1298,30 @@ tr:hover td { background: rgba(201,162,39,0.05); }
   <button onclick="cerrarEscanerQR()" style="margin-top:20px;background:#3a1a1a;color:#ff6666;border:1px solid #c0392b;border-radius:8px;padding:10px 28px;font-size:0.9rem;font-weight:700;cursor:pointer;">✕ Cancelar</button>
 </div>
 
+<!-- Fallback init: asegura que el modo se aplique aunque el módulo tarde -->
+<script>
+  window.addEventListener("load", function() {
+    var modo = localStorage.getItem("csp_modo");
+    if (!modo) return;
+    var app = document.getElementById("appPrincipal");
+    var sel = document.getElementById("pantallaSeleccion");
+    if (!app || app.style.display === "flex") return; // ya inicializado
+    if (window.seleccionarModo) {
+      window.seleccionarModo(modo);
+    } else {
+      // Firebase aún no cargó, forzar visibilidad manual
+      if (sel) sel.style.display = "none";
+      if (app) app.style.display = "flex";
+      var admin = document.getElementById("seccionAdmin");
+      var ingreso = document.getElementById("seccionIngreso");
+      var salida = document.getElementById("seccionSalida");
+      var bitacora = document.getElementById("seccionBitacora");
+      if (admin) admin.style.display = modo === "admin" ? "block" : "none";
+      if (ingreso) ingreso.style.display = modo === "ingreso" ? "block" : "none";
+      if (salida) salida.style.display = modo === "ingreso" ? "block" : "none";
+      if (bitacora) bitacora.style.display = "block";
+    }
+  });
+</script>
 </body>
 </html>
